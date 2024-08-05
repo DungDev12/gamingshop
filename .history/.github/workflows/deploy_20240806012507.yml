@@ -13,7 +13,7 @@ jobs:
       matrix:
         project: [client, admin]
 
-    steps:
+    sts:
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -31,17 +31,11 @@ jobs:
       - name: Deploy ${{ matrix.project }}
         run: |
           if [ "${{ matrix.project }}" == "client" ]; then
+            # Deploy client project
             echo "Deploying client project"
             # Add your deployment script for the client project here
           elif [ "${{ matrix.project }}" == "admin" ]; then
+            # Deploy admin project
             echo "Deploying admin project"
             # Add your deployment script for the admin project here
-          fi
-
-      - name: Start Client Server
-        if: ${{ matrix.project == 'client' }}
-        run: npm run dev -- --port 80
-
-      - name: Start Admin Server
-        if: ${{ matrix.project == 'admin' }}
-        run: npm run dev -- --port 8081
+        fi

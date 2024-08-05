@@ -44,4 +44,4 @@ jobs:
 
       - name: Start Admin Server
         if: ${{ matrix.project == 'admin' }}
-        run: npm run dev -- --port 8081
+        run: npm run dev -- --port 3001

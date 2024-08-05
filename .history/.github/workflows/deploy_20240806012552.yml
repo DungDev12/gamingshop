@@ -40,8 +40,8 @@ jobs:
 
       - name: Start Client Server
         if: ${{ matrix.project == 'client' }}
-        run: npm run dev -- --port 80
+        run: npm run dev -- --port 3000
 
       - name: Start Admin Server
         if: ${{ matrix.project == 'admin' }}
-        run: npm run dev -- --port 8081
+        run: npm run dev -- --port 3001
