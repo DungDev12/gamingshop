@@ -6,9 +6,9 @@
   "homepage": "https://DungDev12.github.io/gamingshop",
   "scripts": {
     "dev": "npm-run-all --parallel dev:admin dev:client",
-    "dev:client": "cross-env PORT=80 vite",
-    "dev:admin": "cross-env PORT=8081 vite",
-    "build:client": "vite build --config vite.config.client.js",
+    "dev:client": "vite --config vite.config.client.js --port 80",
+    "dev:admin": "vite  --config vite.config.admin.js --port 8081",
+    "build:client": "cross-env PORT=8081 vite",
     "build:admin": "vite build --config vite.config.admin.js",
     "build": "npm run build:client && npm run build:admin",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
