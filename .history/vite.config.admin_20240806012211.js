@@ -12,7 +12,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     server: {
-      port: env.VITE_BASE_PORT_ADMIN || 8081,
+      port: env,
     },
     base: env.VITE_BASE_URL,
     build: {
