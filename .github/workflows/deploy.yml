@@ -1,0 +1,41 @@
+name: Deploy Vite Projects
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project: [client, admin]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build ${{ matrix.project }}
+        run: npm run build:${{ matrix.project }}
+
+      - name: Deploy ${{ matrix.project }}
+        run: |
+          if [ "${{ matrix.project }}" == "client" ]; then
+            # Deploy client project
+            echo "Deploying client project"
+            # Add your deployment script for the client project here
+          elif [ "${{ matrix.project }}" == "admin" ]; then
+            # Deploy admin project
+            echo "Deploying admin project"
+            # Add your deployment script for the admin project here
+          fi

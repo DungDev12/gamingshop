@@ -1,0 +1,41 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm ci
+      - name: Build Client
+        env:
+          VITE_BASE_URL: "/gamingshop"
+          VITE_BASE_PORT_CUSTOMER: 80
+        run: npm run build -- --mode client
+      - name: Build Admin
+        env:
+          VITE_BASE_URL: "/gamingshop"
+          VITE_BASE_PORT_ADMIN: 8081
+        run: npm run build -- --mode admin
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add dist -f
+          git commit -m 'Deploy to GitHub Pages'
+          git push -f origin `git subtree split --prefix dist/client main`:gh-pages
