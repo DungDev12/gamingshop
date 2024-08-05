@@ -12,11 +12,11 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     server: {
-      port: env.VITE_BASE_PORT_ADMIN || 8081,
+      port: env.VITE_BASE_PORT_CUSTOMER || 80,
     },
-    base: env.VITE_BASE_URL || "/gamingshop",
+    base: env.VITE_BASE_URL || 80,
     build: {
-      outDir: "dist/admin",
+      outDir: "dist/client",
     },
   };
 
