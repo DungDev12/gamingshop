@@ -11,9 +11,7 @@
     "build:client": "vite build --config vite.config.client.js",
     "build:admin": "vite build --config vite.config.admin.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview:80": "vite preview --port 80",
-    "preview:8081": "vite preview --port 8081",
-    "preview": "npm-run-all --parallel preview:80 preview:8081",
+    "preview": "vite preview --port 80",
     "deploy:github": "gh-pages -d dist",
     "predeploy": "npm run build"
   },
