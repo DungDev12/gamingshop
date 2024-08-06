@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "npm-run-all --parallel dev:admin dev:client",
     "dev:client": "vite --config vite.config.client.js",
-    "dev:admin": "vite  --config vite.config.admin.js",
+    "dev:admin": "vite  --config vite.config.admicn.js",
     "build:client": "vite build --config vite.config.client.js",
     "build:admin": "vite build --config vite.config.admin.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",

@@ -5,7 +5,7 @@
   "type": "module",
   "homepage": "https://DungDev12.github.io/gamingshop",
   "scripts": {
-    "dev": "npm-run-all --parallel dev:admin dev:client",
+    "dev": "npm-run-all --parallel dev:8082 dev:80",
     "dev:client": "vite --config vite.config.client.js",
     "dev:admin": "vite  --config vite.config.admin.js",
     "build:client": "vite build --config vite.config.client.js",
