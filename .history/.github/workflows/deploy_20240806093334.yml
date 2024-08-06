@@ -23,7 +23,7 @@ jobs:
       - run: npm ci
       - name: Build Client
         env:
-          VITE_BASE_URL: "/gamingshop/"
+          VITE_BASE_URL: "/my-repo/"
           VITE_BASE_PORT_CUSTOMER: 80
         run: npm run build:client
       - name: Deploy Client
@@ -32,8 +32,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Admin
         env:
-          VITE_BASE_URL: "/gamingshop/"
-          VITE_BASE_PORT_ADMIN: 8082
+          VITE_BASE_URL: "/my-repo/"
+          VITE_BASE_PORT_ADMIN: 80
         run: npm run build:admin
       - name: Deploy Admin
         run: npm run deploy:admin

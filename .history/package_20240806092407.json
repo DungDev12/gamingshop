@@ -14,10 +14,8 @@
     "preview:8081": "vite preview --port 8081",
     "preview": "npm-run-all --parallel preview:80 preview:8081",
     "deploy": "npm run deploy:client && npm run deploy:admin",
-  "predeploy:client": "npm run build:client",
-  "deploy:client": "gh-pages -d dist/client",
-  "predeploy:admin": "npm run build:admin",
-  "deploy:admin": "gh-pages -d dist/admin",
+    "deploy:client": "gh-pages -d dist/client",
+    "deploy:admin": "gh-pages -d dist/admin",
     "predeploy": "npm run build"
   },
   "dependencies": {
