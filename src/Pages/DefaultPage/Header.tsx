@@ -1,45 +1,59 @@
 import { FaCartShopping, FaListUl } from "react-icons/fa6";
 import SearchComponent from "../../Component/SearchComponent";
-import { useDisclosure } from "@mantine/hooks";
 import { Avatar, Badge, Menu, Modal, rem } from "@mantine/core";
 import Login from "@Pages/Desktop/Auth/Login";
-import { useState } from "react";
 import { IoIosArrowForward } from "react-icons/io";
 import { LuClipboardEdit } from "react-icons/lu";
 import {
   IconSettings,
-  IconPhoto,
   IconLogout,
   IconArrowsLeftRight,
 } from "@tabler/icons-react";
 import ModalCategory from "../../Component/ModalCategory";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "../../store/store";
-import { deleteCookie } from "../../Component/utils/JwtCookie";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, persist, RootState } from "../../store/store";
+import { logout } from "../../store/actions/UserSlice";
+import {
+  closeCategoryModal,
+  closeLoginModal,
+  openCategoryModal,
+  openLoginModal,
+} from "../../store/actions/ModalSlice";
+import { useEffect } from "react";
+import { cart } from "../../store/actions/userActions";
 
 const Header = () => {
-  const [modalLoginOpened, { open: openModalLogin, close: closeModalLogin }] =
-    useDisclosure(false);
-  const [
-    modalCategory,
-    { open: openModalCategory, close: closeModalCategory },
-  ] = useDisclosure(false);
-
-  const [typeChoose, setTypeChoose] = useState<string>("");
+  const baseURL = import.meta.env.VITE_BASE_URL;
+  const dispatch = useDispatch<AppDispatch>();
+  const modal = useSelector((state: RootState) => state.modal);
+  const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
 
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (user?.id) {
+        await dispatch(cart(user.id));
+      }
+    };
+    fetchCart();
+  }, []);
+
   const handleModal = (type: string) => {
-    setTypeChoose(type);
-    return openModalLogin();
+    return dispatch(openLoginModal({ type: type }));
   };
 
   const handleModalCategory = () => {
-    if (modalCategory) {
-      closeModalCategory();
+    if (modal?.categoryOpened) {
+      dispatch(closeCategoryModal());
     } else {
-      openModalCategory();
+      dispatch(openCategoryModal());
     }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    persist.purge();
   };
 
   return (
@@ -48,9 +62,16 @@ const Header = () => {
         <div className="flex justify-between items-center min-h-[40px] w-full bg-[#89CFF3] px-[50px] p-3">
           {/* logo */}
           <div className="w-[25%] cursor-pointer">
-            <div className="flex justify-center items-center gap-4">
-              <div>
-                <img className="object-cover w-full" src="#" alt="logo" />
+            <div
+              className="flex justify-center items-center gap-4"
+              onClick={() => navigate(baseURL)}
+            >
+              <div className="w-[70px] overflow-hidden rounded-[5px]">
+                <img
+                  className="object-contain w-full scale-150"
+                  src="https://i.pinimg.com/originals/77/24/69/772469e807964c438437fc1679f394a1.jpg"
+                  alt="logo"
+                />
               </div>
               <h1 className="text-[18px] font-bold uppercase">Gaming Shop</h1>
             </div>
@@ -67,12 +88,6 @@ const Header = () => {
           <div className="w-[40%] flex items-center justify-between">
             <SearchComponent />
             <div className="flex items-center justify-end gap-2 flex-1">
-              <div className="flex items-center justify-center gap-2 cursor-pointer hover:text-blue-600 transition-all duration-300 ease-linear">
-                <LuClipboardEdit className="text-[22px]" />
-                <span className="w-[70px] text-[14px] font-semibold">
-                  Tra cứu sản phẩm
-                </span>
-              </div>
               <Link
                 to={`${import.meta.env.VITE_BASE_URL}/cart`}
                 className="relative flex items-center justify-center gap-2 cursor-pointer hover:text-blue-600 transition-all duration-300 ease-linear"
@@ -80,7 +95,7 @@ const Header = () => {
                 <FaCartShopping className="text-[24px]" />
                 <div className="absolute -top-2 left-3">
                   <Badge size="xs" circle>
-                    1
+                    {user?.cart}
                   </Badge>
                 </div>
                 <span className="w-[70px] text-[14px] font-semibold">
@@ -95,7 +110,7 @@ const Header = () => {
                 <Menu.Target>
                   <div className="flex items-center gap-2 cursor-pointer">
                     <Avatar
-                      src={user?.avatar}
+                      src={`http://localhost:8080/api/user/${user.id}/avatar`}
                       alt="no image here"
                       color="indigo"
                     />
@@ -103,9 +118,14 @@ const Header = () => {
                       <div className="text-[14px] font-bold uppercase">
                         {user.lastName}
                       </div>
-                      <p className="text-[12px]">
-                        Hạng: <span className="uppercase font-bold">VIP1</span>
-                      </p>
+                      {user?.userRank && (
+                        <p className="text-[12px]">
+                          Hạng:{" "}
+                          <span className="uppercase font-bold">
+                            {user?.userRank}
+                          </span>
+                        </p>
+                      )}
                     </div>
                     <IoIosArrowForward />
                   </div>
@@ -113,30 +133,26 @@ const Header = () => {
                 <Menu.Dropdown>
                   <Menu.Label>Ứng dụng</Menu.Label>
                   <Menu.Item
+                    onClick={() => navigate(`${baseURL}/setting/user`)}
                     leftSection={<IconSettings style={{ width: rem(20) }} />}
                   >
                     Cài đặt
                   </Menu.Item>
-                  <Menu.Item
-                    leftSection={<IconPhoto style={{ height: rem(20) }} />}
-                  >
-                    Hình ảnh
-                  </Menu.Item>
 
                   <Menu.Divider />
 
-                  <Menu.Label></Menu.Label>
                   <Menu.Item
+                    onClick={() => navigate(`${baseURL}/user/order`)}
                     leftSection={
                       <IconArrowsLeftRight
                         style={{ width: rem(20), height: rem(20) }}
                       />
                     }
                   >
-                    Lịch sử giao dịch
+                    Đơn hàng
                   </Menu.Item>
                   <Menu.Item
-                    onClick={() => deleteCookie("jwt")}
+                    onClick={handleLogout}
                     color="red"
                     leftSection={
                       <IconLogout
@@ -161,17 +177,18 @@ const Header = () => {
         </div>
       </header>
       <Modal
-        opened={modalLoginOpened}
-        onClose={closeModalLogin}
+        opened={modal?.loginOpened || false}
+        onClose={() => dispatch(closeLoginModal())}
         withCloseButton={false}
         centered
+        styles={{ body: { padding: 0 } }}
       >
-        <Login type={typeChoose} closeModal={closeModalLogin} />
+        <Login closeModal={() => dispatch(closeLoginModal())} />
       </Modal>
       <Modal
         style={{ zIndex: 1 }}
-        opened={modalCategory}
-        onClose={closeModalCategory}
+        opened={modal?.categoryOpened || false}
+        onClose={() => dispatch(closeCategoryModal())}
         withCloseButton={false}
         size="100%"
         styles={{
@@ -179,7 +196,7 @@ const Header = () => {
           overlay: { zIndex: 1, "--mb-z-index": 41 },
         }}
       >
-        <ModalCategory />
+        <ModalCategory closeModal={() => dispatch(closeCategoryModal())} />
       </Modal>
     </>
   );

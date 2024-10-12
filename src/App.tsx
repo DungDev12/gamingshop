@@ -1,33 +1,35 @@
 import Layout from "@Pages/DefaultPage/Layout";
-import { RouterBase } from "@routes/routes";
-import { Route, Routes } from "react-router-dom";
+import { RouterAdmin, RouterBase } from "@routes/routes";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { Fragment } from "react/jsx-runtime";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import PrivateRouter from "@Pages/Desktop/Auth/private/PrivateRoute";
+import LayoutAdmin from "@Pages/DefaultPage/LayoutAdmin";
 import { useEffect } from "react";
-import { getCookie, refreshAccessToken } from "./Component/utils/JwtCookie";
-import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
-import { setUser } from "./store/actions/UserSlice";
+import { logout } from "./store/actions/UserSlice";
 
 function App() {
-  const dispatch = useDispatch();
-  useEffect(() => {
-    const jwt = getCookie("jwt");
-    if (jwt) {
-      const decoded = jwtDecode(jwt);
-      dispatch(setUser(decoded));
-    }
-  }, [dispatch]);
+  const navigate = useNavigate();
+  const dispath = useDispatch();
 
   useEffect(() => {
-    const checkAndRefreshToken = async () => {
-      const refreshToken = getCookie("jwt"); // Lấy refresh token từ cookie
-      if (refreshToken) {
-        await refreshAccessToken(); // Cố gắng refresh token
+    const checkCookie = () => {
+      const jwtCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("JWT="));
+      console.log(jwtCookie);
+      if (!jwtCookie) {
+        dispath(logout());
       }
     };
-    checkAndRefreshToken();
-  }, []);
+
+    checkCookie();
+
+    const intervalId = setInterval(checkCookie, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [navigate]);
 
   return (
     <>
@@ -43,7 +45,37 @@ function App() {
                   path={route.path}
                   element={
                     <LayoutWrapper>
-                      <Page />
+                      {route?.auth ? (
+                        <PrivateRouter>
+                          <Page />
+                        </PrivateRouter>
+                      ) : (
+                        <Page />
+                      )}
+                    </LayoutWrapper>
+                  }
+                />
+              );
+            })}
+          {RouterAdmin &&
+            RouterAdmin.map((route) => {
+              const Page = route.element;
+              const LayoutWrapper = !route.disableLayout
+                ? LayoutAdmin
+                : Fragment;
+              return (
+                <Route
+                  key={route.id}
+                  path={route.path}
+                  element={
+                    <LayoutWrapper>
+                      {route?.auth ? (
+                        <PrivateRouter>
+                          <Page />
+                        </PrivateRouter>
+                      ) : (
+                        <Page />
+                      )}
                     </LayoutWrapper>
                   }
                 />

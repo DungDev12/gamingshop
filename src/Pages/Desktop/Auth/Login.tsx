@@ -1,13 +1,16 @@
 import { FloatingIndicator, UnstyledButton } from "@mantine/core";
 import { useCallback, useState } from "react";
 import InputComponent from "../../../Component/InputComponent";
-import { GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { AxiosError } from "axios";
 import { TypeForm } from "../../../Component/Interface/Login";
-import { encryptPayload, getCookie } from "../../../Component/utils/JwtCookie";
-import { useDispatch } from "react-redux";
-import { setUser } from "../../../store/actions/UserSlice";
+import { encrypt, encryptPayload } from "../../../Component/utils/JwtCookie";
+import { useDispatch, useSelector } from "react-redux";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { google, login, register } from "../../../store/actions/userActions";
+import { AppDispatch, RootState } from "../../../store/store";
+import { useNavigate } from "react-router-dom";
+import { changeType } from "../../../store/actions/ModalSlice";
 
 const data = [
   {
@@ -20,26 +23,23 @@ const data = [
   },
 ];
 
-const Login = ({
-  type,
-  closeModal,
-}: {
-  type: string;
-  closeModal: () => void;
-}) => {
-  const [openWith, setOpenWith] = useState<string>(type || "");
+const Login = ({ closeModal }: { closeModal: () => void }) => {
+  const openWith = useSelector((state: RootState) => state.modal?.type);
   const [rootRef, setRootRef] = useState<HTMLDivElement | null>(null);
   const [controlsRefs, setControlsRefs] = useState<
     Record<string, HTMLButtonElement | null>
   >({});
   const [active, setActive] = useState(openWith == "login" ? 0 : 1);
   const [formData, setFormData] = useState<TypeForm>({});
-  const dispatch = useDispatch();
-
+  const [err, setErr] = useState<string>("");
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector((state: RootState) => state.user);
   const setControlRef = (index: number) => (node: HTMLButtonElement) => {
     controlsRefs[index] = node;
     setControlsRefs(controlsRefs);
   };
+  const navigate = useNavigate();
+
   const controls = data.map((item, index) => (
     <UnstyledButton
       key={index}
@@ -58,25 +58,54 @@ const Login = ({
     </UnstyledButton>
   ));
 
-  /// Lỗi chưa set Time chuyển trang -> khi click nhanh trang không được render lại
   const handleChange = (item: string, index: number) => {
-    setOpenWith(item);
+    dispatch(changeType({ type: item }));
     setActive(index);
   };
 
+  /* ----------------------- Set Value to State formData ---------------------- */
   const handleOnChange = useCallback((name: string, value: string) => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   }, []);
 
+  /* ---------------------------- Login or Register --------------------------- */
+  //* Login and Register user (finish)
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
     type: string
   ) => {
     e.preventDefault();
-    console.log(type, formData);
-
-    //TODO create logic error
-
+    console.log(formData);
+    if (type !== "login") {
+      if (formData.password != formData.passwordReEnter) {
+        return setErr("Mật khẩu không khớp");
+      }
+      if (formData.username == "" || formData.username == undefined) {
+        return setErr("Tài khoản không được để trống");
+      }
+      if (formData.email == "" || formData.email == undefined) {
+        return setErr("Email không được để trống");
+      }
+      if (formData.phone == "" || formData.phone == undefined) {
+        return setErr("Số điện thoại không được để trống");
+      }
+      if (formData.phone.length < 9) {
+        return setErr("Số điện thoại không hợp lệ");
+      }
+      if (formData.lastName == "" || formData.lastName == undefined) {
+        return setErr("Tên không được để trống");
+      }
+      if (!formData.email.includes("@")) {
+        return setErr("Email không hợp lệ");
+      }
+    } else {
+      if (formData.username == "" || formData.username == undefined) {
+        return setErr("Tài khoản không được để trống");
+      }
+      if (formData.password == "" || formData.password == undefined) {
+        return setErr("Mật khẩu không được để trống");
+      }
+    }
     const payload =
       type === "login"
         ? { username: formData.username, password: formData.password }
@@ -89,31 +118,37 @@ const Login = ({
             firstName: formData.firstName,
             lastName: formData.lastName,
           };
-    const api =
-      type == "login"
-        ? "http://localhost:8080/api/auth/login"
-        : "http://localhost:8080/api/auth/register";
     try {
-      const res = await axios.post(
-        api,
-        { payload: encryptPayload(payload) },
-        { withCredentials: true }
-      );
-      if (res.status === 200) {
-        const jwt = getCookie("jwt");
-        if (jwt) {
-          const decoded = jwtDecode(jwt);
-          dispatch(setUser(decoded));
-          closeModal();
-        }
+      if (type === "login") {
+        await dispatch(login(encryptPayload(payload))).unwrap();
+      } else {
+        await dispatch(register(encryptPayload(payload))).unwrap();
       }
+      closeModal();
     } catch (err) {
-      console.log("Login/Register: ", err);
+      const error = err as AxiosError;
+      console.log(error);
+    }
+  };
+
+  /* -------------------------- Login Google Account -------------------------- */
+  //* Login Google (finish)
+  const handleLoginGoogle = async (tokenResponse: CredentialResponse) => {
+    try {
+      const payload = tokenResponse.credential!;
+      await dispatch(google(encrypt(payload))).unwrap();
+      closeModal();
+    } catch (err) {
+      const error = err as AxiosError;
+      console.log(error);
     }
   };
 
   return (
-    <div style={{ overflow: "hidden" }}>
+    <div
+      style={{ overflow: "hidden" }}
+      className="px-[16px] pt-[16px] relative"
+    >
       <div
         className={"relative flex gap-[10px] justify-center"}
         ref={setRootRef}
@@ -165,9 +200,28 @@ const Login = ({
                   </span>
                 </p>
               </div>
+              <div className="mb-[5px] text-[12px]">
+                <span
+                  className="cursor-pointer text-blue-400 underline underline-offset-2 hover:text-blue-600"
+                  onClick={() => {
+                    if (!user?.logged) {
+                      navigate(
+                        `${import.meta.env.VITE_BASE_URL}/forgot-password`
+                      );
+                      closeModal();
+                    }
+                  }}
+                >
+                  Quên mật khẩu?
+                </span>
+              </div>
               <button
                 type="submit"
-                className={`bg-blue-400 px-[20px] py-[5px] rounded-[4px] text-white hover:bg-blue-600`}
+                className={`px-[20px] py-[5px] rounded-[4px] text-white ${
+                  user?.loading
+                    ? "bg-blue-200 pointer-events-none"
+                    : "bg-blue-400 hover:bg-blue-600"
+                }`}
               >
                 Đăng nhập
               </button>
@@ -175,29 +229,9 @@ const Login = ({
             <hr className="mb-[0.5rem]" />
             <div className="mb-[10px] inline-block">
               <GoogleLogin
-                onSuccess={async (tokenResponse) => {
-                  console.log(tokenResponse);
-                  try {
-                    const response = await axios.post(
-                      "http://localhost:8080/api/auth/verify-google-jwt",
-                      tokenResponse.credential,
-                      {
-                        withCredentials: true,
-                      }
-                    );
-
-                    if (response.status == 200) {
-                      const jwt = getCookie("jwt");
-                      if (jwt) {
-                        const decoded = jwtDecode(jwt);
-                        dispatch(setUser(decoded));
-                        closeModal();
-                      }
-                    }
-                  } catch (error) {
-                    console.error("Lỗi JWT: ", error);
-                  }
-                }}
+                onSuccess={async (tokenResponse) =>
+                  await handleLoginGoogle(tokenResponse)
+                }
                 onError={() => {
                   console.log("Login Failed");
                 }}
@@ -205,13 +239,13 @@ const Login = ({
             </div>
           </div>
         ) : (
-          <div className="text-center py-[20px] w-full">
+          <div className="text-center py-[20px] px-[15px] w-full">
             <h2 className="text-[24px] font-bold">Đăng ký</h2>
             <form
               className="my-[10px]"
               onSubmit={(e) => handleSubmit(e, "register")}
             >
-              <div className="flex items-center gap-4 px-[20px]">
+              <div className="flex items-center gap-4">
                 <InputComponent
                   title="Họ"
                   name="firstName"
@@ -269,9 +303,14 @@ const Login = ({
                 valueGetter={formData?.address}
                 onChangeReturn={handleOnChange}
               />
+              {err && <p className="text-red-600 text-[12px]">{err}</p>}
               <button
                 type="submit"
-                className="bg-blue-600 px-[20px] py-[5px] rounded-[4px] text-white "
+                className={`px-[20px] py-[5px] rounded-[4px] text-white ${
+                  user?.loading
+                    ? "bg-blue-200 pointer-events-none"
+                    : "bg-blue-400 hover:bg-blue-600"
+                }`}
               >
                 Đăng ký
               </button>
@@ -279,6 +318,11 @@ const Login = ({
           </div>
         )}
       </div>
+      {user?.loading && (
+        <div className="w-full h-full absolute bg-[#0000006e] z-[1] top-0 left-0 grid place-items-center">
+          <AiOutlineLoading3Quarters className="text-[60px] text-white animate-spin" />
+        </div>
+      )}
     </div>
   );
 };

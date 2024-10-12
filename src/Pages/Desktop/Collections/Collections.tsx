@@ -7,10 +7,21 @@ import {
 import { useParams } from "react-router-dom";
 import Product from "../../../Component/Product";
 import FiltersComponent from "../../../Component/FiltersComponent";
+import axios, { AxiosError } from "axios";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store/store";
 
 const Collections: React.FC = () => {
   const urlBase = import.meta.env.VITE_BASE_URL;
+  const userID = useSelector((state: RootState) => state.user?.id);
+  const filter = useSelector((state: RootState) => state.filter);
+  const [products, setProducts] = useState([]);
+  const [productsFilter, setProductsFilter] = useState([]);
   const { category, brand } = useParams();
+  const [page, setPage] = useState(0);
+  const [totalPage, setTotalPage] = useState(0);
+
   const items = [
     { title: "Trang chủ", href: `${urlBase}` },
     {
@@ -29,286 +40,61 @@ const Collections: React.FC = () => {
         ]),
   ];
 
-  //#TEST
-  const apidata: any[] = [
-    {
-      id: 1,
-      name: "Laptop 1",
-      isStock: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
+  let filterStock = [...products];
+  useEffect(() => {
+    filterStock = filterStock.filter(
+      (item) => item.price >= filter.min && item.price <= filter.max
+    );
+
+    if (filter?.filters.length !== 0) {
+      filterStock = filterStock.filter((product) => {
+        return filter.filters.every((list) => {
+          if (list.title === "Tình trạng sản phẩm") {
+            return product.stock < 1;
+          } else {
+            const matchesBrand =
+              product.brandName
+                .toUpperCase()
+                .includes(list.title.toUpperCase()) &&
+              list.arrValue.some(
+                (item) =>
+                  product.brandItemName.toUpperCase() === item.toUpperCase()
+              );
+
+            const matchesConfig = product.details.configurations.some(
+              (config) =>
+                list.arrValue.includes(config.description.toUpperCase())
+            );
+            return matchesBrand || matchesConfig;
+          }
+        });
+      });
+    }
+    setProductsFilter(filterStock);
+  }, [filter]);
+
+  useEffect(() => {
+    get();
+  }, [category, brand, page]);
+
+  async function get() {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/product/${category}`,
         {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Laptop 2",
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Laptop 3",
-      isFavorite: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "Laptop 4",
-      isFavorite: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-    {
-      id: 5,
-      name: "Laptop 5",
-      isFavorite: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-    {
-      id: 6,
-      name: "Laptop 6",
-      isFavorite: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-    {
-      id: 7,
-      name: "Laptop 7",
-      isFavorite: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-  ];
+          params: { brand, userID, page, size: 3 },
+        }
+      );
+      if (response.status === 200) {
+        setTotalPage(response.data.totalPages);
+        setProducts(response.data.products);
+        setProductsFilter(response.data.products);
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      console.log(error);
+    }
+  }
 
   return (
     <div className="w-[90%] mx-auto my-[50px] h-full min-h-[600px]">
@@ -331,9 +117,9 @@ const Collections: React.FC = () => {
       </Breadcrumbs>
       <div className="w-full h-full bg-[#fff] rounded-[6px] mt-[20px] p-4">
         <FiltersComponent />
-        {apidata.length > 0 ? (
+        {productsFilter.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4 place-content-center">
-            {apidata.map((item) => (
+            {productsFilter.map((item) => (
               <Product key={item.id} item={item} />
             ))}
           </div>
@@ -342,16 +128,21 @@ const Collections: React.FC = () => {
             <p>Không có dữ liệu cần tìm</p>
           </div>
         )}
-        <hr />
         <div className="flex justify-end mt-[1rem]">
-          <Pagination
-            total={15}
-            autoContrast
-            boundaries={1}
-            nextIcon={IconArrowRight}
-            previousIcon={IconArrowLeft}
-            dotsIcon={IconGripHorizontal}
-          />
+          {productsFilter.length > 0 && (
+            <>
+              <hr />
+              <Pagination
+                total={totalPage}
+                autoContrast
+                boundaries={page}
+                nextIcon={IconArrowRight}
+                previousIcon={IconArrowLeft}
+                dotsIcon={IconGripHorizontal}
+                onChange={(e) => setPage(e - 1)}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

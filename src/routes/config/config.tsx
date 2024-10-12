@@ -104,3 +104,16 @@ export const sizeBannerDefault = {
   mainBanner: 550,
   bottomBanner: 200,
 };
+
+export interface ApiSelection {
+  laptop: string[];
+  pc: string[];
+  "bàn phím": string[];
+  "màn hình": string[];
+}
+export const apiSelection: ApiSelection = {
+  laptop: ["CPU", "RAM", "SSD", "HDD"],
+  pc: ["CPU", "RAM", "SSD", "HDD", "MOTHERBOARD"],
+  "bàn phím": ["BATTERY"],
+  "màn hình": ["HZ", "LAYER"],
+};

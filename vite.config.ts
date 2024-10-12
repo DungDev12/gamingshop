@@ -14,4 +14,7 @@ export default defineConfig({
       "@Mobile": path.resolve(__dirname, "./src/Pages/Mobile"),
     },
   },
+  define: {
+    global: {},
+  },
 });

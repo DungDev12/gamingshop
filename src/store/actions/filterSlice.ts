@@ -5,8 +5,10 @@ export interface FilterProps {
   arrValue: string[];
 }
 
-interface FilterState {
+export interface FilterState {
   filters: FilterProps[];
+  min: number;
+  max: number;
 }
 
 interface AddFilterPayload {
@@ -16,6 +18,8 @@ interface AddFilterPayload {
 
 const initialState: FilterState = {
   filters: [],
+  min: 1000000,
+  max: 1000000000,
 };
 
 const filterSlice = createSlice({
@@ -35,8 +39,16 @@ const filterSlice = createSlice({
           state.filters[indexFilter].arrValue.push(value);
         } else {
           state.filters[indexFilter].arrValue.splice(indexValue, 1);
+          if (state.filters[indexFilter].arrValue.length == 0) {
+            state.filters.splice(indexFilter, 1);
+          }
         }
       }
+    },
+    addFilterNumber: (state, action) => {
+      const { min, max } = action.payload;
+      state.min = min;
+      state.max = max;
     },
     clearTitle: (state, action: PayloadAction<{ index: number }>) => {
       const { index } = action.payload;
@@ -48,6 +60,7 @@ const filterSlice = createSlice({
   },
 });
 
-export const { addFilter, clearFilter, clearTitle } = filterSlice.actions;
+export const { addFilter, clearFilter, clearTitle, addFilterNumber } =
+  filterSlice.actions;
 
 export default filterSlice.reducer;

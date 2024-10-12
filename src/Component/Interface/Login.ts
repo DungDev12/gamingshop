@@ -7,4 +7,6 @@ export interface TypeForm {
   lastName?: string;
   passwordReEnter?: string;
   address?: string;
+  credential?: string;
+  otp?: string;
 }

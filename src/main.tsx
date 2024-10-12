@@ -5,17 +5,20 @@ import "./index.css";
 import { MantineProvider } from "@mantine/core";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
-import store from "./store/store.ts";
+import store, { persist } from "./store/store.ts";
 import "@mantine/core/styles.css";
+import { PersistGate } from "redux-persist/integration/react";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
-        <MantineProvider>
+      <PersistGate loading={null} persistor={persist}>
+        <BrowserRouter>
+          <MantineProvider>
             <App />
-        </MantineProvider>
-      </BrowserRouter>
+          </MantineProvider>
+        </BrowserRouter>
+      </PersistGate>
     </Provider>
   </StrictMode>
 );

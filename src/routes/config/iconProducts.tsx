@@ -9,10 +9,12 @@ import {
   BsFillUsbPlugFill,
   BsGpuCard,
   BsHdmi,
+  BsHeadphones,
+  BsKeyboard,
   BsLayersHalf,
   BsMotherboard,
   BsMouse,
-  BsMouseFill,
+  BsMouse2Fill,
   BsPc,
   BsRadar,
   BsUsbC,
@@ -47,5 +49,8 @@ export const iconsSpec = {
 export const iconList = [
   { name: "laptop", icon: FaLaptop },
   { name: "pc", icon: BsPc },
-  { name: "pc", icon: BsMouseFill },
+  { name: "bàn phím", icon: BsKeyboard },
+  { name: "tai nghe", icon: BsHeadphones },
+  { name: "chuột", icon: BsMouse2Fill },
+  { name: "màn hình", icon: BsDisplay },
 ];

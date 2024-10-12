@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import Product from "./Product";
+import axios, { AxiosError } from "axios";
 
 interface SearchState {
   name?: string;
@@ -11,6 +12,7 @@ const SearchComponent: React.FC = () => {
   const [search, setSearch] = useState<SearchState>({});
   const [debouncedSearch, setDebouncedSearch] = useState<SearchState>({});
   const [openModalSearch, setOpenModalSearch] = useState<boolean>(false);
+  const [apidata, setAPIData] = useState([]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -26,124 +28,29 @@ const SearchComponent: React.FC = () => {
     };
   }, [search]);
 
-  // TODO Hoàn thành tính năng tìm kiếm và trả dữ liệu về
+  useEffect(() => {
+    get();
+  }, []);
+
+  async function get() {
+    try {
+      const response = await axios.get("http://localhost:8080/product/all", {
+        params: { search: debouncedSearch.value },
+      });
+      if (response.status === 200) {
+        console.log(response.data);
+        setAPIData(response.data.products);
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     // trả về dữ liệu search
-    console.log(debouncedSearch);
+    get();
   }, [debouncedSearch]);
-
-  //#TEST
-  const apidata: any[] = [
-    {
-      id: 1,
-      name: "Laptop 1",
-      isStock: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Laptop 2",
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Laptop 3",
-      isFavorite: true,
-      image:
-        "https://product.hstatic.net/200000722513/product/vobook_14_oled_x1405v_m1405y_cool_silver_black_keyboard_13_fingerprint_6701c548b729416d90498bdac33dec13_medium.png",
-      price: {
-        discount: 10,
-        original: 10000,
-        sale: 9000,
-      },
-      specProducts: [
-        {
-          icon: "CPU",
-          spec: "i5 13500H",
-        },
-        {
-          icon: "RAM",
-          spec: "16GB",
-        },
-        {
-          icon: "SSD",
-          spec: "512GB",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-        {
-          icon: "GPU",
-          spec: "GTX 2060",
-        },
-      ],
-    },
-  ];
 
   return (
     <div className="">

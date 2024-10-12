@@ -70,19 +70,20 @@ const InputComponent: React.FC<InputComponentProps> = ({
         <div>
           <PhoneInput
             specialLabel=""
-            buttonStyle={{ paddingLeft: "20px" }}
+            buttonStyle={{ paddingLeft: "0px" }}
             inputStyle={{
               paddingTop: "8px",
               paddingBottom: "8px",
-              width: "90%",
+              width: "100%",
               borderColor: "black",
             }}
             country={"vn"}
+            value={valueGetter || "84"}
             onChange={(phone) => handleInputPhone(name, phone)}
           />
         </div>
       ) : (
-        <div className="relative group my-[10px] w-[90%] mx-auto">
+        <div className="relative group my-[10px] mx-auto">
           <input
             className={`w-full  border-[1.5px] outline-none px-[10px] py-[8px] rounded-[4px] ${
               error.error ? "border-red-600" : "border-black"

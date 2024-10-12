@@ -13,6 +13,16 @@ export function encryptPayload(payload: TypeForm) {
     }
   ).toString();
 }
+export function encrypt(payload: string) {
+  return CryptoTS.AES.encrypt(
+    JSON.stringify(payload),
+    CryptoTS.enc.Utf8.parse(keySC),
+    {
+      mode: CryptoTS.mode.ECB,
+      padding: CryptoTS.pad.PKCS7,
+    }
+  ).toString();
+}
 
 export function decryptPayload(res: string) {
   return JSON.parse(
@@ -28,14 +38,13 @@ export const getCookie = (name: string) => {
   const parts = value.split(`; ${name}=`);
   if (parts.length > 1) {
     const cookieValue = parts[1].split(";")[0];
-    return decryptPayload(cookieValue);
+    return cookieValue;
   }
   return ""; // Nếu cookie không tồn tại, trả về chuỗi rỗng
 };
 
 export const deleteCookie = (name: string) => {
   document.cookie = `${name}=; Max-Age=0; path=/;`;
-  location.reload();
 };
 
 const apiClient = axios.create({
@@ -55,7 +64,7 @@ export const makeApiCall = async (): Promise<TypeForm | undefined> => {
     const err = error as AxiosError;
     if (err.response) {
       if (err.response.status === 401) {
-        await refreshAccessToken(); // Gọi lại hàm refresh token
+        await refreshAccessToken(accessToken); // Gọi lại hàm refresh token
         return makeApiCall(); // Thử gọi lại API
       }
       console.error("Lỗi khi gọi API:", err.response.data);
@@ -63,20 +72,23 @@ export const makeApiCall = async (): Promise<TypeForm | undefined> => {
   }
 };
 
-export const refreshAccessToken = async () => {
+export const refreshAccessToken = async (token: string) => {
   try {
-    const response = await apiClient.post(
+    await apiClient.post(
       "/refresh-token",
       {},
       {
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${decryptPayload(token)}`,
+        },
       }
     );
-    console.log("Refresh token thành công:", response.data);
+    console.log("Refresh Token thành công");
   } catch (error) {
     const err = error as AxiosError;
     if (err.response) {
-      console.error("Refresh token không hợp lệ:", err.response.data);
+      console.error("Refresh token không hợp lệ");
     }
     // Thực hiện logout hoặc điều hướng đến trang đăng nhập
     deleteCookie("jwt");

@@ -3,23 +3,25 @@ import { iconsSpec } from "@routes/config/iconProducts";
 type IconSpecKeys = keyof typeof iconsSpec;
 
 export interface SpecProduct {
-  icon: IconSpecKeys;
-  spec: string;
+  name: IconSpecKeys;
+  description: string;
 }
 
 export interface Product {
   id: number;
   name: string;
-  isStock?: boolean;
-  image?: string;
-  imageArray?: string[];
-  isFavorite?: boolean;
-  price: {
-    discount: number;
-    original: number;
-    sale: number;
+  details: {
+    images: string[];
+    configurations: SpecProduct[];
   };
-  specProducts: SpecProduct[];
+  originalPrice: number;
+  point: number;
+  isFavorite: boolean;
+  discount: number;
+  price: number;
+  image: string;
+  rating: number;
+  stock: number;
 }
 export interface ProductProps {
   item: Product;
